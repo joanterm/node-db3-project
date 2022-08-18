@@ -8,6 +8,7 @@ function find() {
   // COUNT(steps.scheme_id) as number_of_steps
   .count("steps.scheme_id as number_of_steps")
   // LEFT JOIN steps
+  // ON schemes.scheme_id = steps.scheme_id
   .leftJoin("steps", "schemes.scheme_id", "steps.scheme_id")
   // GROUP BY steps.scheme_id
   .groupBy("steps.scheme_id")
@@ -21,22 +22,6 @@ function find() {
   // ON schemes.scheme_id = steps.scheme_id
   // GROUP BY steps.scheme_id
   // ORDER BY schemes.scheme_id ASC
-
-  /*
-    1A- Study the SQL query below running it in SQLite Studio against `data/schemes.db3`.
-    What happens if we change from a LEFT join to an INNER join?
-      SELECT
-          sc.*,
-          count(st.step_id) as number_of_steps
-      FROM schemes as sc
-      LEFT JOIN steps as st
-          ON sc.scheme_id = st.scheme_id
-      GROUP BY sc.scheme_id
-      ORDER BY sc.scheme_id ASC;
-
-    2A- When you have a grasp on the query go ahead and build it in Knex.
-    Return from this function the resulting dataset.
-  */
 }
 
 function findById(scheme_id) { // EXERCISE B
@@ -107,27 +92,25 @@ function findById(scheme_id) { // EXERCISE B
   */
 }
 
-function findSteps(scheme_id) { // EXERCISE C
-  /*
-    1C- Build a query in Knex that returns the following data.
-    The steps should be sorted by step_number, and the array
-    should be empty if there are no steps for the scheme:
+function findSteps(scheme_id) { 
+  // FROM steps
+  return db("steps")
+  .where("steps.scheme_id", scheme_id)
+  // SELECT steps.step_id, steps.step_number,
+  // steps.instructions, schemes.scheme_name
+  .select("steps.step_id", "steps.step_number", "steps.instructions", "schemes.scheme_name")
+  // JOIN schemes
+  // ON schemes.scheme_id = steps.scheme_id
+  .join("schemes", "schemes.scheme_id", "steps.scheme_id")
+  // ORDER BY steps.step_number
+  .orderBy("steps.step_number")
 
-      [
-        {
-          "step_id": 5,
-          "step_number": 1,
-          "instructions": "collect all the sheep in Scotland",
-          "scheme_name": "Get Rich Quick"
-        },
-        {
-          "step_id": 4,
-          "step_number": 2,
-          "instructions": "profit",
-          "scheme_name": "Get Rich Quick"
-        }
-      ]
-  */
+// SELECT steps.step_id, steps.step_number,
+// steps.instructions, schemes.scheme_name
+// FROM steps
+// JOIN schemes
+// ON schemes.scheme_id = steps.scheme_id
+// ORDER BY steps.step_number
 }
 
 function add(scheme) { // EXERCISE D
@@ -144,10 +127,18 @@ function addStep(scheme_id, step) { // EXERCISE E
   */
 }
 
+//FOR checkSchemeId MIDDLEWARE ONLY
+function doesSchemeExist(scheme_id) {
+  return db("schemes")
+  .where("scheme_id", scheme_id)
+  .first()
+}
+
 module.exports = {
   find,
   findById,
   findSteps,
   add,
   addStep,
+  doesSchemeExist
 }
