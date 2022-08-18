@@ -1,8 +1,30 @@
-function find() { // EXERCISE A
+const db = require("../../data/db-config")
+
+function find() {
+  // FROM schemes
+  return db("schemes")
+  // SELECT schemes.scheme_id, schemes.scheme_name,
+  .select("schemes.scheme_id", "schemes.scheme_name")
+  // COUNT(steps.scheme_id) as number_of_steps
+  .count("steps.scheme_id as number_of_steps")
+  // LEFT JOIN steps
+  .leftJoin("steps", "schemes.scheme_id", "steps.scheme_id")
+  // GROUP BY steps.scheme_id
+  .groupBy("steps.scheme_id")
+  // ORDER BY schemes.scheme_id ASC
+  .orderBy("schemes.scheme_id", "asc")
+
+  // SELECT schemes.scheme_id, schemes.scheme_name,
+  // COUNT(steps.scheme_id) as number_of_steps
+  // FROM schemes
+  // LEFT JOIN steps
+  // ON schemes.scheme_id = steps.scheme_id
+  // GROUP BY steps.scheme_id
+  // ORDER BY schemes.scheme_id ASC
+
   /*
     1A- Study the SQL query below running it in SQLite Studio against `data/schemes.db3`.
     What happens if we change from a LEFT join to an INNER join?
-
       SELECT
           sc.*,
           count(st.step_id) as number_of_steps
