@@ -24,25 +24,8 @@ function find() {
   // ORDER BY schemes.scheme_id ASC
 }
 
-function findById(scheme_id) { // EXERCISE B
+async function findById(scheme_id) { // EXERCISE B
   /*
-    1B- Study the SQL query below running it in SQLite Studio against `data/schemes.db3`:
-
-      SELECT
-          sc.scheme_name,
-          st.*
-      FROM schemes as sc
-      LEFT JOIN steps as st
-          ON sc.scheme_id = st.scheme_id
-      WHERE sc.scheme_id = 1
-      ORDER BY st.step_number ASC;
-
-    2B- When you have a grasp on the query go ahead and build it in Knex
-    making it parametric: instead of a literal `1` you should use `scheme_id`.
-
-    3B- Test in Postman and see that the resulting data does not look like a scheme,
-    but more like an array of steps each including scheme information:
-
       [
         {
           "scheme_id": 1,
@@ -60,7 +43,7 @@ function findById(scheme_id) { // EXERCISE B
         },
         // etc
       ]
-
+      
     4B- Using the array obtained and vanilla JavaScript, create an object with
     the structure below, for the case _when steps exist_ for a given `scheme_id`:
 
@@ -89,7 +72,39 @@ function findById(scheme_id) { // EXERCISE B
         "scheme_name": "Have Fun!",
         "steps": []
       }
-  */
+  */  // FROM schemes
+      const schemesArray = await db("schemes")
+        // SELECT schemes.scheme_id, schemes.scheme_name,
+        // steps.step_id, steps.step_number, steps.instructions
+        .select("schemes.scheme_id", "schemes.scheme_name", "steps.step_id", "steps.step_number", "steps.instructions")
+        // LEFT JOIN steps
+        // ON schemes.scheme_id = steps.scheme_id
+        .leftJoin("steps", "schemes.scheme_id", "steps.scheme_id")
+        // WHERE schemes.scheme_id = 1
+        .where("schemes.scheme_id", scheme_id)
+        // ORDER BY steps.step_number ASC
+        .orderBy("steps.step_number", "asc")
+
+      const result = {
+        scheme_id: schemesArray[0].scheme_id,
+        scheme_name: schemesArray[0].scheme_name,
+        steps: schemesArray
+          .filter((item) => item.step_id !== null)
+          .map(item => ({ 
+            step_id: item.step_id,
+            step_number: item.step_number, 
+            instructions: item.instructions, 
+          }))
+      }
+      return result
+
+      // SELECT schemes.scheme_id, schemes.scheme_name,
+      // steps.step_id, steps.step_number, steps.instructions
+      // FROM schemes
+      // LEFT JOIN steps
+      // ON schemes.scheme_id = steps.scheme_id
+      // WHERE schemes.scheme_id = 1
+      // ORDER BY steps.step_number ASC
 }
 
 function findSteps(scheme_id) { 
@@ -114,9 +129,11 @@ function findSteps(scheme_id) {
 }
 
 function add(scheme) { // EXERCISE D
-  /*
-    1D- This function creates a new scheme and resolves to _the newly created scheme_.
-  */
+  // return db("schemes")
+  // .insert(scheme)
+  // .then((id) => {
+  //   return findById(id[0])
+  // })
 }
 
 function addStep(scheme_id, step) { // EXERCISE E
